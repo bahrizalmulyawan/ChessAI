@@ -29,10 +29,6 @@ main{max-width:1240px;margin:auto;padding:26px 22px 38px}.masthead{display:flex;
         <label class="pill">Hitam <select id="rightModel"><option value="snn">SNN</option><option value="cnn">CNN</option><option value="perceptron">Perceptron</option><option value="triple">Triple</option></select></label>
         <span class="pill">Sentuh bidak lalu kotak tujuan</span>
       </div>
-      <div class="mobile-controls" style="display:none" aria-label="Kontrol sentuh untuk pemain manusia">
-        <button id="touchUp" aria-label="Gerakkan paddle ke atas">⬆️ Naik</button>
-        <button id="touchDown" aria-label="Gerakkan paddle ke bawah">⬇️ Turun</button>
-      </div>
       <p class="small">Pilih bidak putih lalu pilih kotak tujuan yang disorot. Mode AI vs AI memainkan kedua sisi otomatis.</p>
       <div class="stats">
         <div class="stat"><small id="leftLabel">Putih</small><strong id="humanScore">0</strong></div>
@@ -55,15 +51,11 @@ main{max-width:1240px;margin:auto;padding:26px 22px 38px}.masthead{display:flex;
       </div>
     </section>
     <section class="panel full">
-      <div class="section-head"><h2>Pergerakan bidak catur</h2><span class="kicker">visualisasi langkah · ukuran ringkas</span></div>
+      <div class="section-head"><h2>Pergerakan bidak catur</h2><span class="kicker">visualisasi langkah dan arah perpindahan</span></div>
       <div class="mini-viz-grid">
         <div>
           <canvas id="moveViz" width="400" height="400" aria-label="Visualisasi ringkas perpindahan bidak catur"></canvas>
-          <p class="small">Papan mini menyorot langkah terakhir dan arah perpindahan bidak.</p>
-        </div>
-        <div>
-          <canvas id="pongViz" width="600" height="260" aria-label="Visualisasi bola dan paddle"></canvas>
-          <p class="small">Bola bergerak dan memantul pada batas arena; paddle mengikuti posisi target sederhana.</p>
+          <p class="small">Panah menunjukkan perpindahan bidak terakhir pada papan.</p>
         </div>
       </div>
       <div class="stats science-stats">
@@ -74,20 +66,24 @@ main{max-width:1240px;margin:auto;padding:26px 22px 38px}.masthead{display:flex;
         <div class="stat"><small>Total langkah</small><strong id="sciRally">0</strong></div>
         <div class="stat"><small>Event belajar</small><strong id="sciLearn">0</strong></div>
       </div>
-      <div class="legend"><span><i class="dot" style="background:#c7e77a"></i>Langkah terakhir</span><span><i class="dot" style="background:#7dd3fc"></i>Arah perpindahan</span><span><i class="dot" style="background:#f3f5ed"></i>Bola</span><span><i class="dot" style="background:#e7a56a"></i>Paddle</span></div>
+      <div class="legend"><span><i class="dot" style="background:#c7e77a"></i>Langkah terakhir</span><span><i class="dot" style="background:#7dd3fc"></i>Arah perpindahan</span></div>
+    </section>
+    <section class="panel full">
+      <div class="section-head"><h2>History pergerakan bidak</h2><span class="kicker">urutan langkah · panah perpindahan</span></div>
+      <div id="moveHistory" class="logs" aria-live="polite">Belum ada langkah.</div>
     </section>
     <section class="panel full">
       <div class="section-head"><h2>Catatan simulasi</h2><span class="kicker">aktivitas terbaru</span></div>
       <div class="row"><span class="pill">Model: LIF</span><span class="pill">256 neuron visual</span><span class="pill">Update bobot: reward-modulated</span><button id="clearLog">Bersihkan log</button></div>
       <div id="logs" class="logs" aria-live="polite"></div>
-      <p class="small">Log menampilkan encoding sensor, arus sinaps, potensial membran, spike output, aksi, dan perubahan bobot. Bobot dimulai acak lalu beradaptasi dari hasil pantulan; performa awal bisa buruk dan belajar tidak dijamin optimal.</p>
+      <p class="small">Log menampilkan encoding sensor, arus sinaps, potensial membran, spike output, aksi, dan perubahan bobot. Bobot dimulai acak lalu beradaptasi dari hasil evaluasi langkah catur; performa awal bisa bervariasi.</p>
     </section>
   </div>
   <footer><span>CHESS AI LAB · prototipe eksperimen AI</span><span>Author: BAHRIZAL HELMI MULYAWAN</span></footer>
 </main>
 <script>
 (()=>{'use strict';
-const $=id=>document.getElementById(id),canvas=$('game'),ctx=canvas.getContext('2d'),moveCanvas=$('moveViz'),mctx=moveCanvas.getContext('2d'),pongCanvas=$('pongViz'),pctx=pongCanvas.getContext('2d');
+const $=id=>document.getElementById(id),canvas=$('game'),ctx=canvas.getContext('2d'),moveCanvas=$('moveViz'),mctx=moveCanvas.getContext('2d');
 const W=800,H=450,PW=12,PH=86,BR=7,AI_X=W-24-PW;
 let running=false,raf=0,tick=0,totalSpikes=0,human=0,ai=0,lastTime=0,acc=0;
 const keys={},touchMove={up:false,down:false};
@@ -273,15 +269,6 @@ function drawScience(){
     mctx.strokeStyle='#7dd3fc';mctx.lineWidth=4;mctx.beginPath();mctx.moveTo(fx,fy);mctx.lineTo(tx,ty);mctx.stroke();
     const ang=Math.atan2(ty-fy,tx-fx);mctx.fillStyle='#7dd3fc';mctx.beginPath();mctx.moveTo(tx,ty);mctx.lineTo(tx-13*Math.cos(ang-.5),ty-13*Math.sin(ang-.5));mctx.lineTo(tx-13*Math.cos(ang+.5),ty-13*Math.sin(ang+.5));mctx.closePath();mctx.fill();
   }
-  const pw=pongCanvas.width,ph=pongCanvas.height;
-  pctx.clearRect(0,0,pw,ph);pctx.fillStyle='#0b110e';pctx.fillRect(0,0,pw,ph);
-  pctx.strokeStyle='#26372c';pctx.lineWidth=1;
-  for(let y=10;y<ph;y+=20){pctx.setLineDash([4,5]);pctx.beginPath();pctx.moveTo(pw/2,y);pctx.lineTo(pw/2,y+10);pctx.stroke()}pctx.setLineDash([]);
-  const bx=ball.x/W*pw,by=ball.y/H*ph,paddleH=PH/H*ph,paddleW=8;
-  const leftY=clamp((humanP.y+PH/2)/H*ph-paddleH/2,0,ph-paddleH),rightY=clamp((aiP.y+PH/2)/H*ph-paddleH/2,0,ph-paddleH);
-  pctx.fillStyle='#e7a56a';pctx.fillRect(14,leftY,paddleW,paddleH);pctx.fillRect(pw-22,rightY,paddleW,paddleH);
-  pctx.fillStyle='#f3f5ed';pctx.beginPath();pctx.arc(bx,by,6,0,Math.PI*2);pctx.fill();
-  pctx.fillStyle='#a5b2a6';pctx.font='11px ui-monospace,monospace';pctx.fillText('BALL / PADDLE',12,15);
   $('sciTick').textContent=tick.toLocaleString();
   $('sciPos').textContent=lastMove?PIECES[lastMove.piece]:'—';
   $('sciVel').textContent=lastMove?`${CFILES[lastMove.from&7]}${8-(lastMove.from>>3)} → ${CFILES[lastMove.to&7]}${8-(lastMove.to>>3)}`:'—';
@@ -291,7 +278,7 @@ function drawScience(){
 const CFILES='abcdefgh', PIECES={K:'♔',Q:'♕',R:'♖',B:'♗',N:'♘',P:'♙',k:'♚',q:'♛',r:'♜',b:'♝',n:'♞',p:'♟'};
 let board=[],turn='w',selected=null,legalSelected=[],lastMove=null,moveList=[],gameOver=false,aiBusy=false,halfmove=0;
 const sq=(r,c)=>r*8+c, inside=(r,c)=>r>=0&&r<8&&c>=0&&c<8, colorOf=p=>p?(p===p.toUpperCase()?'w':'b'):null;
-function initialBoard(){board=Array(64).fill('');const back='rnbqkbnr';for(let c=0;c<8;c++){board[c]=back[c];board[8+c]='p';board[48+c]='P';board[56+c]=back[c].toUpperCase()}turn='w';selected=null;legalSelected=[];lastMove=null;moveList=[];gameOver=false;halfmove=0;human=0;ai=0;$('humanScore').textContent='0';$('aiScore').textContent='0';$('leftLabel').textContent=gameMode==='self'?'AI Putih':'Putih';$('rightLabel').textContent='AI Hitam';}
+function initialBoard(){board=Array(64).fill('');const back='rnbqkbnr';for(let c=0;c<8;c++){board[c]=back[c];board[8+c]='p';board[48+c]='P';board[56+c]=back[c].toUpperCase()}turn='w';selected=null;legalSelected=[];lastMove=null;moveList=[];$('moveHistory').textContent='Belum ada langkah.';gameOver=false;halfmove=0;human=0;ai=0;$('humanScore').textContent='0';$('aiScore').textContent='0';$('leftLabel').textContent=gameMode==='self'?'AI Putih':'Putih';$('rightLabel').textContent='AI Hitam';}
 function isAttacked(pos,by){let r=pos>>3,c=pos&7, pawnDir=by==='w'?-1:1,pr=r-pawnDir;
  for(const dc of [-1,1])if(inside(pr,c+dc)&&board[sq(pr,c+dc)]===(by==='w'?'P':'p'))return true;
  for(const [dr,dc] of [[-2,-1],[-2,1],[-1,-2],[-1,2],[1,-2],[1,2],[2,-1],[2,1]]){let rr=r+dr,cc=c+dc;if(inside(rr,cc)&&board[sq(rr,cc)].toLowerCase()==='n'&&colorOf(board[sq(rr,cc)])===by)return true}
@@ -305,7 +292,10 @@ function pseudoMoves(col){let out=[];for(let from=0;from<64;from++){let p=board[
  }
  return out}
 function legalMoves(col=turn){let out=[];for(let m of pseudoMoves(col)){let captured=board[m.to],old=board[m.from];board[m.to]=m.promotion||old;board[m.from]='';let ok=!inCheck(col);board[m.from]=old;board[m.to]=captured;if(ok)out.push(m)}return out}
-function movePiece(m){let p=board[m.from];board[m.to]=m.promotion||p;board[m.from]='';lastMove=m;turn=turn==='w'?'b':'w';selected=null;legalSelected=[];halfmove=(p.toLowerCase()==='p'||m.capture)?0:halfmove+1;const num=moveList.length+1;moveList.push(`${turn==='b'?num+'. ':'... '}${p.toUpperCase()} ${CFILES[m.from&7]}${8-(m.from>>3)}-${CFILES[m.to&7]}${8-(m.to>>3)}${m.capture?' x':''}${m.promotion?' =Q':''}`);tick++;$('ticks').textContent=tick;
+function movePiece(m){let p=board[m.from];board[m.to]=m.promotion||p;board[m.from]='';lastMove=m;turn=turn==='w'?'b':'w';selected=null;legalSelected=[];halfmove=(p.toLowerCase()==='p'||m.capture)?0:halfmove+1;const num=moveList.length+1;const fromSq=`${CFILES[m.from&7]}${8-(m.from>>3)}`,toSq=`${CFILES[m.to&7]}${8-(m.to>>3)}`;
+  moveList.push(`${turn==='b'?num+'. ':'... '}${p.toUpperCase()} ${fromSq} → ${toSq}${m.capture?' ×':''}${m.promotion?' =Q':''}`);
+  $('moveHistory').innerHTML=moveList.map((entry,i)=>`<div class="logline"><b>${i+1}.</b> ${entry}</div>`).join('');
+  tick++;$('ticks').textContent=tick;
  const lm=legalMoves(turn);if(!lm.length){gameOver=true;let msg=inCheck(turn)?(turn==='w'?'Skakmat — Hitam menang':'Skakmat — Putih menang'):'Remis — pat';log(`<b>HASIL</b> ${msg}`);$('sciTarget').textContent=msg}
  $('humanScore').textContent=moveList.length;$('aiScore').textContent=lm.length; ball.x=m.to%8*100+50;ball.y=Math.floor(m.to/8)*56+20;ball.vx=(m.to%8-m.from%8)||.1;ball.vy=(Math.floor(m.to/8)-Math.floor(m.from/8))||.1;
  // Keep the existing neural models, spike visualization, learning counters and logs active.
@@ -341,12 +331,12 @@ function reset(){pause();tick=0;totalSpikes=0;$('ticks').textContent='0';$('tota
 document.addEventListener('keydown',e=>{keys[e.key]=true;if(['ArrowUp','ArrowDown',' '].includes(e.key))e.preventDefault();if(e.key===' '){running?pause():start()}});
 document.addEventListener('keyup',e=>keys[e.key]=false);
 function bindHold(id,dir){const el=$(id),down=e=>{e.preventDefault();touchMove[dir]=true;if(!running)start()},up=e=>{e.preventDefault();touchMove[dir]=false};el.addEventListener('pointerdown',down);['pointerup','pointercancel','pointerleave','lostpointercapture'].forEach(ev=>el.addEventListener(ev,up));el.addEventListener('contextmenu',e=>e.preventDefault())}
-bindHold('touchUp','up');bindHold('touchDown','down');
+
 canvas.addEventListener('click',e=>{if(gameOver||gameMode==='self'||turn!=='w'||aiBusy)return;const r=canvas.getBoundingClientRect(),c=Math.floor((e.clientX-r.left)/r.width*8),rr=Math.floor((e.clientY-r.top)/r.height*8);if(!inside(rr,c))return;const pos=sq(rr,c);if(selected===null){if(board[pos]&&colorOf(board[pos])==='w'){selected=pos;legalSelected=legalMoves('w').filter(m=>m.from===pos)} }else{let m=legalSelected.find(m=>m.to===pos);if(m)movePiece(m);else if(board[pos]&&colorOf(board[pos])==='w'){selected=pos;legalSelected=legalMoves('w').filter(x=>x.from===pos)}else{selected=null;legalSelected=[]}}draw()});
  $('start').onclick=start;$('pause').onclick=pause;$('reset').onclick=reset;$('clearLog').onclick=()=>{$('logs').innerHTML='';log('<b>SYSTEM</b> log dibersihkan.')};
 $('saveAI').onclick=()=>{saveMemory();downloadJSON('memory.json',{version:modelVersion,hiddenCount:N_H,inputCount:N_IN,outputCount:N_OUT,weights,outWeights,bias,models,snnSides:{left:{weights:snnSideState.left.weights,outWeights:snnSideState.left.outWeights,bias:snnSideState.left.bias},right:{weights:snnSideState.right.weights,outWeights:snnSideState.right.outWeights,bias:snnSideState.right.bias}},learnedHits,learnedMisses,trainEvents});downloadJSON('learn.json',{learnedHits,learnedMisses,episodes:learnedHits+learnedMisses,trainEvents,updatedAt:new Date().toISOString()});log('<b>SAVE</b> Ekspor memory.json dan learn.json dimulai.')};
 $('loadAI').onclick=()=>{const inp=document.createElement('input');inp.type='file';inp.accept='.json,application/json';inp.onchange=async()=>{try{const obj=JSON.parse(await inp.files[0].text());if(obj.version===modelVersion&&obj.hiddenCount===N_H&&obj.inputCount===N_IN&&obj.outputCount===N_OUT&&obj.weights?.length===N_H&&obj.outWeights?.length===N_OUT){weights=obj.weights;outWeights=obj.outWeights;bias=obj.bias||bias;learnedHits=obj.learnedHits||0;learnedMisses=obj.learnedMisses||0;trainEvents=obj.trainEvents||0;if(obj.models)Object.assign(models,obj.models);if(obj.snnSides){for(const side of ['left','right']){const saved=obj.snnSides[side];if(saved?.weights?.length===N_H&&saved?.outWeights?.length===N_OUT){snnSideState[side].weights=saved.weights;snnSideState[side].outWeights=saved.outWeights;snnSideState[side].bias=saved.bias||snnSideState[side].bias}}}else{snnSideState.right.weights=obj.weights;snnSideState.right.outWeights=obj.outWeights;snnSideState.right.bias=obj.bias||snnSideState.right.bias}saveMemory();log('<b>LOAD</b> Bobot AI berhasil dimuat.')}else log('<b>WARN</b> Format memory.json tidak cocok.')}catch(e){log('<b>WARN</b> JSON tidak valid.')}};inp.click()};
-$('gameMode').onchange=e=>{gameMode=e.target.value;$('leftLabel').textContent=gameMode==='self'?'AI kiri ('+modelNames[leftModel]+')':'Putih';$('rightLabel').textContent='Hitam ('+modelNames[rightModel]+')';$('touchUp').style.display=gameMode==='self'?'none':'';$('touchDown').style.display=gameMode==='self'?'none':'';log('<b>MODE</b> '+(gameMode==='self'?'AI vs AI self-play aktif.':'Manusia vs AI aktif.'));draw()};
+$('gameMode').onchange=e=>{gameMode=e.target.value;$('leftLabel').textContent=gameMode==='self'?'AI kiri ('+modelNames[leftModel]+')':'Putih';$('rightLabel').textContent='Hitam ('+modelNames[rightModel]+')';log('<b>MODE</b> '+(gameMode==='self'?'AI vs AI self-play aktif.':'Manusia vs AI aktif.'));draw()};
 $('leftModel').onchange=e=>{leftModel=e.target.value;$('leftLabel').textContent=gameMode==='self'?'AI kiri ('+modelNames[leftModel]+')':'Putih';draw()};
 $('rightModel').onchange=e=>{rightModel=e.target.value;$('rightLabel').textContent='Hitam ('+modelNames[rightModel]+')';draw()};
 const loaded=loadMemory();initialBoard();log(`<b>INIT</b> 20 sensor (bola + paddle manusia + prediksi) → ${N_H} hidden LIF → 3 output. ${loaded?'Memory tersimpan dimuat.':'Bobot awal baru.'}`);
