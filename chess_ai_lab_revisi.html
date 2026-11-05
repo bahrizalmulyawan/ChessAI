@@ -1,0 +1,357 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Chess AI Lab — Eksperimen Model</title>
+<style>
+:root{color-scheme:dark;--bg:#101714;--panel:#19231e;--panel2:#202d26;--line:#39483e;--ink:#e9eee4;--muted:#a5b2a6;--lime:#c7e77a;--orange:#e7a56a;--field:#0b110e}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;letter-spacing:.005em}
+main{max-width:1240px;margin:auto;padding:26px 22px 38px}.masthead{display:flex;align-items:flex-end;justify-content:space-between;gap:18px;border-bottom:1px solid var(--line);padding:4px 0 18px;margin-bottom:20px}.brand{display:flex;align-items:center;gap:12px}.brand-mark{width:42px;height:42px;display:grid;place-items:center;border:1px solid #61724f;border-radius:11px;color:var(--lime);font-size:23px;background:#222f25}h1{font-size:clamp(25px,3vw,34px);line-height:1.05;letter-spacing:-.045em;margin:0;font-weight:760} .eyebrow{color:var(--lime);text-transform:uppercase;letter-spacing:.16em;font-size:10px;font-weight:800;margin:0 0 5px}.intro{max-width:390px;color:var(--muted);font-size:13px;margin:0 0 2px}
+.layout{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(310px,.8fr);gap:16px}.panel{background:var(--panel);border:1px solid var(--line);border-radius:13px;padding:17px;min-width:0;box-shadow:0 8px 22px #00000012}.panel h2{font-size:14px;letter-spacing:.015em;margin:0 0 13px;font-weight:750}.section-head{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:12px}.section-head h2{margin:0}.kicker{color:var(--muted);font-size:11px}.game-wrap{position:relative}canvas{display:block;width:100%;border-radius:7px;background:var(--field);border:1px solid #344238}.gamecanvas{aspect-ratio:16/9}.row{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:12px 0}.pill{border:1px solid var(--line);border-radius:6px;padding:6px 9px;color:var(--muted);font-size:12px;background:#121a15}select{background:#121a15;color:var(--ink);border:1px solid #506050;border-radius:5px;padding:5px 7px;margin-left:4px;font:inherit;max-width:100%}button{background:#29372d;color:var(--ink);border:1px solid #52624f;border-radius:6px;padding:8px 12px;cursor:pointer;font-family:inherit;font-size:12px;font-weight:650;line-height:1.3;transition:background .15s,border-color .15s}button:hover{background:#354739;border-color:#80916e}button.primary{background:var(--lime);border-color:var(--lime);color:#1a2418}button.primary:hover{background:#d7f392}.stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:13px}.stat{background:#121a15;border:1px solid var(--line);border-radius:7px;padding:11px}.stat small{display:block;color:var(--muted);font-size:11px;margin-bottom:4px}.stat strong{font-size:25px;letter-spacing:-.04em;font-variant-numeric:tabular-nums}.small{font-size:12px;color:var(--muted);margin:10px 0 0}.grid16{display:grid;grid-template-columns:repeat(16,minmax(0,1fr));gap:3px;aspect-ratio:1;max-width:430px;margin:0 auto}.cell{background:#26332b;border-radius:2px;aspect-ratio:1;min-width:0;transition:background .08s}.legend{display:flex;gap:12px;flex-wrap:wrap;color:var(--muted);font-size:11px;margin-top:12px}.dot{display:inline-block;width:8px;height:8px;border-radius:2px;margin-right:5px}.logs{height:205px;overflow:auto;background:#101713;border:1px solid var(--line);border-radius:7px;padding:10px;font:11px/1.6 ui-monospace,SFMono-Regular,Consolas,monospace}.logline{padding:5px 0;border-bottom:1px solid #253129;overflow-wrap:anywhere}.logline b{color:var(--lime);font-weight:700}.muted{color:var(--muted)}.mobile-controls{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:12px 0}.mobile-controls button{min-height:48px;font-size:14px;touch-action:none;user-select:none;-webkit-user-select:none}.mobile-controls button:active{background:#3d523f;transform:translateY(1px)}.full{grid-column:1/-1}.weights{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.weights div{background:#121a15;padding:10px;border-radius:7px;border:1px solid var(--line);font-size:12px;color:var(--muted)}.weights strong{display:inline-block;margin-top:4px;color:var(--ink);font-size:17px}.panel-note{border-top:1px solid var(--line);margin-top:14px;padding-top:12px}.row label.pill{display:flex;align-items:center;gap:2px}#saveAI{border-color:#687b54}footer{display:flex;justify-content:space-between;gap:10px;color:#7f9082;font-size:11px;padding:16px 2px 0}.mode-row{background:#141c16;border:1px solid var(--line);border-radius:8px;padding:10px}.science-stats{grid-template-columns:repeat(6,minmax(0,1fr))}.mini-viz-grid{display:grid;grid-template-columns:minmax(180px,.7fr) minmax(0,1.3fr);gap:16px;align-items:start}.mini-viz-grid canvas{width:100%;height:auto;max-width:400px}.mini-viz-grid>div:nth-child(2) canvas{max-width:600px}.science-stats .stat strong{font-size:17px}@media(max-width:850px){.science-stats{grid-template-columns:repeat(2,minmax(0,1fr))}.mini-viz-grid{grid-template-columns:1fr}.mini-viz-grid canvas{max-width:100%}}
+@media(max-width:850px){main{padding:17px 12px 28px}.masthead{align-items:flex-start;flex-direction:column}.intro{max-width:none}.layout{grid-template-columns:1fr}.full{grid-column:auto}.logs{height:180px}.panel{padding:13px}.row button{flex:1 1 auto}.row .pill{flex:0 1 auto}.stats{gap:6px}.stat{padding:8px}.stat strong{font-size:22px}}
+</style>
+</head>
+<body>
+<main>
+  <header class="masthead">
+    <div class="brand"><div class="brand-mark">↗</div><div><p class="eyebrow">Eksperimen kecerdasan buatan</p><h1>Chess AI Lab</h1></div></div>
+    <p class="intro">Papan catur untuk menguji SNN, CNN, perceptron, dan ensemble Triple. Pilih langkah atau adu AI putih melawan AI hitam.</p>
+  </header>
+  <div class="layout">
+    <section class="panel">
+      <div class="section-head"><h2>Arena</h2><span class="kicker">8 × 8 · catur</span></div>
+      <div class="game-wrap"><canvas id="game" class="gamecanvas" width="800" height="800" style="aspect-ratio:1;touch-action:manipulation" aria-label="Papan catur interaktif"></canvas></div>
+      <div class="row">
+        <button class="primary" id="start">Mulai</button><button id="pause">Jeda</button><button id="reset">Reset skor</button><button id="saveAI">Ekspor memory.json + learn.json</button><button id="loadAI">Impor memory.json</button>
+        <label class="pill">Mode <select id="gameMode"><option value="human">Manusia vs AI</option><option value="self">AI vs AI</option></select></label>
+        <label class="pill">AI kiri <select id="leftModel"><option value="perceptron">Perceptron</option><option value="cnn">CNN</option><option value="snn">SNN</option><option value="triple">Triple</option></select></label>
+        <label class="pill">Hitam <select id="rightModel"><option value="snn">SNN</option><option value="cnn">CNN</option><option value="perceptron">Perceptron</option><option value="triple">Triple</option></select></label>
+        <span class="pill">Sentuh bidak lalu kotak tujuan</span>
+      </div>
+      <div class="mobile-controls" style="display:none" aria-label="Kontrol sentuh untuk pemain manusia">
+        <button id="touchUp" aria-label="Gerakkan paddle ke atas">⬆️ Naik</button>
+        <button id="touchDown" aria-label="Gerakkan paddle ke bawah">⬇️ Turun</button>
+      </div>
+      <p class="small">Pilih bidak putih lalu pilih kotak tujuan yang disorot. Mode AI vs AI memainkan kedua sisi otomatis.</p>
+      <div class="stats">
+        <div class="stat"><small id="leftLabel">Putih</small><strong id="humanScore">0</strong></div>
+        <div class="stat"><small id="rightLabel">Hitam</small><strong id="aiScore">0</strong></div>
+        <div class="stat"><small>Tick simulasi</small><strong id="ticks">0</strong></div>
+      </div>
+      <p class="small">Mesin catur menggunakan pencarian langkah dan evaluasi material. Pilihan model tetap tersedia untuk mengubah strategi pemilihan langkah; visualisasi neuron, log, dan ekspor/impor memory dipertahankan.</p>
+    </section>
+    <section class="panel">
+      <div class="section-head"><h2>Aktivitas neuron</h2><span class="kicker">256 neuron visual</span></div>
+      <p class="small">Setiap kotak = satu neuron. Terang berarti neuron itu baru saja spike pada tick terakhir; warna redup menunjukkan potensial membran.</p>
+      <div id="grid" class="grid16" aria-label="Visualisasi 256 neuron"></div>
+      <div class="legend"><span><i class="dot" style="background:#5eead4"></i>Spike</span><span><i class="dot" style="background:#eab308"></i>Potensial tinggi</span><span><i class="dot" style="background:#18243b"></i>Diam</span></div>
+      <div class="row"><span class="pill">Spike tick ini: <b id="spikes">0</b></span><span class="pill">Total spike: <b id="totalSpikes">0</b></span></div>
+      <h2 style="margin-top:14px">Output neuron</h2>
+      <div class="weights">
+        <div>⬆ Naik<br><strong id="upOut">0</strong> spike</div>
+        <div>⏸ Diam<br><strong id="stayOut">0</strong> spike</div>
+        <div>⬇ Turun<br><strong id="downOut">0</strong> spike</div>
+      </div>
+    </section>
+    <section class="panel full">
+      <div class="section-head"><h2>Pergerakan bidak catur</h2><span class="kicker">visualisasi langkah · ukuran ringkas</span></div>
+      <div class="mini-viz-grid">
+        <div>
+          <canvas id="moveViz" width="400" height="400" aria-label="Visualisasi ringkas perpindahan bidak catur"></canvas>
+          <p class="small">Papan mini menyorot langkah terakhir dan arah perpindahan bidak.</p>
+        </div>
+        <div>
+          <canvas id="pongViz" width="600" height="260" aria-label="Visualisasi bola dan paddle"></canvas>
+          <p class="small">Bola bergerak dan memantul pada batas arena; paddle mengikuti posisi target sederhana.</p>
+        </div>
+      </div>
+      <div class="stats science-stats">
+        <div class="stat"><small>Langkah / tick</small><strong id="sciTick">0</strong></div>
+        <div class="stat"><small>Bidak terakhir</small><strong id="sciPos">—</strong></div>
+        <div class="stat"><small>Arah gerak</small><strong id="sciVel">—</strong></div>
+        <div class="stat"><small>Tujuan</small><strong id="sciTarget">—</strong></div>
+        <div class="stat"><small>Total langkah</small><strong id="sciRally">0</strong></div>
+        <div class="stat"><small>Event belajar</small><strong id="sciLearn">0</strong></div>
+      </div>
+      <div class="legend"><span><i class="dot" style="background:#c7e77a"></i>Langkah terakhir</span><span><i class="dot" style="background:#7dd3fc"></i>Arah perpindahan</span><span><i class="dot" style="background:#f3f5ed"></i>Bola</span><span><i class="dot" style="background:#e7a56a"></i>Paddle</span></div>
+    </section>
+    <section class="panel full">
+      <div class="section-head"><h2>Catatan simulasi</h2><span class="kicker">aktivitas terbaru</span></div>
+      <div class="row"><span class="pill">Model: LIF</span><span class="pill">256 neuron visual</span><span class="pill">Update bobot: reward-modulated</span><button id="clearLog">Bersihkan log</button></div>
+      <div id="logs" class="logs" aria-live="polite"></div>
+      <p class="small">Log menampilkan encoding sensor, arus sinaps, potensial membran, spike output, aksi, dan perubahan bobot. Bobot dimulai acak lalu beradaptasi dari hasil pantulan; performa awal bisa buruk dan belajar tidak dijamin optimal.</p>
+    </section>
+  </div>
+  <footer><span>CHESS AI LAB · prototipe eksperimen AI</span><span>Author: BAHRIZAL HELMI MULYAWAN</span></footer>
+</main>
+<script>
+(()=>{'use strict';
+const $=id=>document.getElementById(id),canvas=$('game'),ctx=canvas.getContext('2d'),moveCanvas=$('moveViz'),mctx=moveCanvas.getContext('2d'),pongCanvas=$('pongViz'),pctx=pongCanvas.getContext('2d');
+const W=800,H=450,PW=12,PH=86,BR=7,AI_X=W-24-PW;
+let running=false,raf=0,tick=0,totalSpikes=0,human=0,ai=0,lastTime=0,acc=0;
+const keys={},touchMove={up:false,down:false};
+const ball={x:W/2,y:H/2,vx:4.3,vy:2.4},humanP={y:H/2-PH/2},aiP={y:H/2-PH/2};
+const clamp=(x,a,b)=>Math.max(a,Math.min(b,x));
+const rand=(s=.18)=>(Math.random()*2-1)*s;
+const grid=$('grid');
+const neurons=Array.from({length:256},(_,i)=>({v:0,spike:false,threshold:.7+Math.random()*.35,leak:.76+Math.random()*.12}));
+const N_IN=20,N_H=40,N_OUT=3;
+// Model configs: a compact perceptron and a lightweight 1-D convolutional model.
+const gameModeDefault='human';
+let gameMode=gameModeDefault,leftModel='perceptron',rightModel='snn';
+const modelNames={snn:'SNN',cnn:'CNN',perceptron:'Perceptron',triple:'Triple'};
+const models={
+ perceptron:{w:Array.from({length:3},()=>Array.from({length:N_IN},()=>rand(.12))),b:[0,0,0],hits:0,misses:0},
+ cnn:{conv:Array.from({length:8},()=>Array.from({length:3},()=>rand(.3))),dense:Array.from({length:3},()=>Array.from({length:8},()=>rand(.18))),b:[0,0,0],hits:0,misses:0}
+};
+const hidden=Array.from({length:N_H},()=>({v:0,threshold:.52,leak:.72+Math.random()*.12,spike:false}));
+const output=Array.from({length:N_OUT},()=>({v:0,threshold:.42,leak:.66,spike:false}));
+const makeSnnSide=()=>({hidden:Array.from({length:N_H},()=>({v:0,spike:false})),output:Array.from({length:N_OUT},()=>({v:0,spike:false})),lastAction:1,decisionHold:0,lastInput:Array(N_IN).fill(0),lastHidden:Array(N_H).fill(0),weights:Array.from({length:N_H},()=>Array.from({length:N_IN},()=>rand(.24))),outWeights:Array.from({length:N_OUT},()=>Array.from({length:N_H},()=>rand(.22))),bias:Array.from({length:N_OUT},()=>0)});
+const snnSideState={left:makeSnnSide(),right:makeSnnSide()};
+let ballTrail=[],rallyHits=0,frameCounter=0,fpsEstimate=0,lastFpsStamp=0;
+let weights=Array.from({length:N_H},()=>Array.from({length:N_IN},()=>rand(.24)));
+let outWeights=Array.from({length:N_OUT},()=>Array.from({length:N_H},()=>rand(.22)));
+let bias=Array.from({length:N_OUT},()=>0),lastInput=Array(N_IN).fill(0),lastHidden=Array(N_H).fill(0),lastAction=1,decisionHold=0,modelVersion=3,learnedHits=0,learnedMisses=0,prevHumanY=humanP.y,humanVelocity=0,trainEvents=0;
+neurons.forEach((n,i)=>{let d=document.createElement('div');d.className='cell';d.title='Neuron '+i;grid.appendChild(d)});
+function log(s){let d=document.createElement('div');d.className='logline';d.innerHTML=s;$('logs').prepend(d);while($('logs').children.length>180)$('logs').lastChild.remove()}
+function predictY(){
+ let x=ball.x,y=ball.y,vx=ball.vx,vy=ball.vy;
+ if(vx<=0)return clamp(y+vy*8,BR,H-BR);
+ let t=(AI_X-BR-x)/Math.max(1,vx);let raw=y+vy*t,span=H-2*BR,period=2*span;
+ let z=((raw-BR)%period+period)%period;
+ return BR+(z<=span?z:period-z);
+}
+function encode(paddle=aiP){
+ const target=predictY(),center=paddle.y+PH/2,rel=clamp((target-center)/(H/2),-1,1),currentRel=clamp((ball.y-center)/(H/2),-1,1);
+ const vel=clamp(ball.vy/8,-1,1),horiz=clamp((AI_X-ball.x)/W,0,1),toward=ball.vx>0?1:0;
+ // Sensor membaca posisi dan arah bola, kecepatan bola, target pantulan, serta posisi/arah gerak paddle manusia.
+ const humanCenter=humanP.y+PH/2;
+ const humanOffset=clamp((ball.y-humanCenter)/(H/2),-1,1);
+ const vals=[Math.max(0,rel),Math.max(0,-rel),Math.max(0,vel),Math.max(0,-vel),toward,horiz,
+  Math.max(0,currentRel),Math.max(0,-currentRel),clamp(target/H,0,1),Math.max(0,rel-.2),Math.max(0,-rel-.2),
+  clamp(ball.x/W,0,1),clamp(ball.y/H,0,1),clamp((ball.vx+8)/16,0,1),clamp((ball.vy+8)/16,0,1),
+  Math.max(0,humanOffset),Math.max(0,-humanOffset),clamp((humanVelocity+6)/12,0,1),clamp(humanCenter/H,0,1),Math.abs(humanVelocity)/6];
+ const spikes=vals.map((v,i)=>{const rate=clamp(.10+.86*v,0,1);return (Math.random()<rate||(v>.5&&tick%2===i%2))?1:0});
+ return {vals,spikes,rel,vel,target,humanOffset,humanVelocity};
+}
+function snnStep(paddle=aiP,side='right'){
+ const state=snnSideState[side]||snnSideState.right,hs=[],e=encode(paddle),localHidden=state.hidden,localOutput=state.output,localWeights=state.weights,localOutWeights=state.outWeights,localBias=state.bias;
+ for(let j=0;j<N_H;j++){
+   let current=0;for(let i=0;i<N_IN;i++)current+=localWeights[j][i]*e.spikes[i];
+   // Stronger sensory drive + lower effective threshold keeps the network active.
+   const sensoryBoost=e.spikes.reduce((a,b)=>a+b,0)>0?.16:.08;
+   localHidden[j].v=localHidden[j].v*.76+current*1.18+sensoryBoost;
+   localHidden[j].spike=localHidden[j].v>=.46;
+   if(localHidden[j].spike)localHidden[j].v=Math.max(0,localHidden[j].v-.40);
+   hs.push(localHidden[j].spike?1:0);
+ }
+ const currents=[];
+ for(let k=0;k<N_OUT;k++){
+   let c=localBias[k];for(let j=0;j<N_H;j++)c+=localOutWeights[k][j]*hs[j];
+   c+=(k===0?Math.max(0,-e.rel):k===2?Math.max(0,e.rel):.10)*.95;
+   currents[k]=c;localOutput[k].v=localOutput[k].v*.72+c*1.12;
+   localOutput[k].spike=localOutput[k].v>=.36;
+   if(localOutput[k].spike)localOutput[k].v=Math.max(0,localOutput[k].v-.32);
+ }
+ const scores=localOutput.map((o,k)=>o.v+(o.spike?1.8:0)+currents[k]*.22);
+ let chosen=scores.indexOf(Math.max(...scores));
+ if(Math.abs(scores[0]-scores[2])<.12&&Math.abs(e.rel)<.12)chosen=1;
+ if(state.decisionHold>0){state.decisionHold--;if(chosen!==state.lastAction&&Math.abs(scores[chosen]-scores[state.lastAction])<.5)chosen=state.lastAction}
+ if(chosen!==state.lastAction){state.lastAction=chosen;state.decisionHold=2}
+ state.lastInput=e.vals;state.lastHidden=hs;lastInput=e.vals;lastHidden=hs;lastAction=chosen;
+ let count=0;
+ for(let i=0;i<256;i++){
+   let drive=0;if(i<96)drive=e.spikes[i%N_IN];else if(i<224)drive=hs[(i-96)%N_H];else if(i<227)drive=localOutput[i-224].spike?1:0;else drive=Math.random()<.06?1:0;
+   neurons[i].v=neurons[i].v*neurons[i].leak+drive*(.7+Math.random()*.55);neurons[i].spike=neurons[i].v>=neurons[i].threshold;
+   if(neurons[i].spike){neurons[i].v=0;count++}
+ }
+ totalSpikes+=count;$('spikes').textContent=count;$('totalSpikes').textContent=totalSpikes;
+ if((side==='right'||gameMode!=='self') && tick%3===0){
+ $('upOut').textContent=localOutput[0].spike?1:0;$('stayOut').textContent=localOutput[1].spike?1:0;$('downOut').textContent=localOutput[2].spike?1:0;
+ [...grid.children].forEach((d,i)=>{const n=neurons[i];d.style.background=n.spike?'#c7e77a':n.v>.24?`rgb(${Math.round(70+n.v*65)},${Math.round(65+n.v*45)},25)`:'#26332b';d.style.boxShadow=n.spike?'0 0 5px #c7e77a66':'none'})
+}
+ if(tick%180===0&&side==='right')log(`<b>t=${tick}</b> SNN(${side}) sensor[20]=[${e.spikes.join('')}] targetY=${e.target.toFixed(0)} rel=${e.rel.toFixed(2)}; hidden=${hs.reduce((a,b)=>a+b,0)}/${N_H}; aksi=${['NAIK','DIAM','TURUN'][chosen]}`);
+ return chosen;
+}
+function sensorFor(paddle,side){
+ const right=side==='right',targetX=right?AI_X:24+PW+BR;
+ const t=ball.vx===0?0:(targetX-ball.x)/ball.vx;
+ let projected=ball.y+ball.vy*t;const span=H-2*BR,period=2*span;let z=((projected-BR)%period+period)%period;projected=BR+(z<=span?z:period-z);
+ const center=paddle.y+PH/2,rel=clamp((projected-center)/(H/2),-1,1),now=clamp((ball.y-center)/(H/2),-1,1);
+ const humanCenter=humanP.y+PH/2;
+ return [Math.max(0,rel),Math.max(0,-rel),Math.max(0,ball.vy/8),Math.max(0,-ball.vy/8),right?(ball.vx>0?1:0):(ball.vx<0?1:0),clamp(Math.abs(targetX-ball.x)/W,0,1),Math.max(0,now),Math.max(0,-now),clamp(projected/H,0,1),Math.max(0,rel-.2),Math.max(0,-rel-.2),clamp(ball.x/W,0,1),clamp(ball.y/H,0,1),clamp((ball.vx+8)/16,0,1),clamp((ball.vy+8)/16,0,1),Math.max(0,clamp((ball.y-humanCenter)/(H/2),-1,1)),Math.max(0,-clamp((ball.y-humanCenter)/(H/2),-1,1)),clamp((humanVelocity+6)/12,0,1),clamp(humanCenter/H,0,1),Math.abs(humanVelocity)/6];
+}
+function modelStep(type,paddle,side){
+ if(type==='snn')return snnStep(paddle,side);
+ const x=sensorFor(paddle,side);
+ const perceptronScores=()=>{const m=models.perceptron;return m.w.map((row,k)=>row.reduce((sum,w,i)=>sum+w*x[i],m.b[k]))};
+ const cnnFeatures=()=>{const m=models.cnn;return m.conv.map((row,fi)=>Math.max(0,row.reduce((sum,w,j)=>sum+w*(x[(fi*2+j)%x.length]-.25),0)))};
+ const cnnScores=()=>{const m=models.cnn,f=cnnFeatures();return m.dense.map((row,k)=>row.reduce((sum,w,i)=>sum+w*f[i],m.b[k]))};
+ let scores;
+ if(type==='perceptron') scores=perceptronScores();
+ else if(type==='cnn') scores=cnnScores();
+ else if(type==='triple'){
+  // Triple = ensemble vote: Perceptron + CNN + trajectory/sensor policy.
+  const ps=perceptronScores(),cs=cnnScores(),snnAction=snnStep(paddle,side),target=(()=>{let tx=side==='right'?AI_X:24+PW+BR,t=(tx-ball.x)/(Math.abs(ball.vx)||1),raw=ball.y+ball.vy*t,span=H-2*BR,period=2*span,z=((raw-BR)%period+period)%period;return BR+(z<=span?z:period-z)})();
+  const policy=[clamp((paddle.y+PH/2-target)/H,-1,1),0,clamp((target-(paddle.y+PH/2))/H,-1,1)];
+  scores=[0,0,0];for(let k=0;k<3;k++)scores[k]=ps[k]*.8+cs[k]*.8+policy[k]*1.5+(k===snnAction?.9:0);
+ } else scores=perceptronScores();
+ const target=(()=>{let tx=side==='right'?AI_X:24+PW+BR,t=(tx-ball.x)/(Math.abs(ball.vx)||1),raw=ball.y+ball.vy*t,span=H-2*BR,period=2*span,z=((raw-BR)%period+period)%period;return BR+(z<=span?z:period-z)})();
+ scores[0]+=clamp((paddle.y+PH/2-target)/H,-.8,.8)*.65;scores[2]+=clamp((target-(paddle.y+PH/2))/H,-.8,.8)*.65;
+ return scores.indexOf(Math.max(...scores));
+}
+function trainModel(type,paddle,side,reward){
+ if(type==='snn'){learn(reward,side);return}
+ if(type==='triple'){trainModel('perceptron',paddle,side,reward*.7);trainModel('cnn',paddle,side,reward*.7);trainModel('snn',paddle,side,reward*.7);return}
+ const m=models[type];if(!m)return;const x=sensorFor(paddle,side),center=paddle.y+PH/2;
+ const tx=side==='right'?AI_X:24+PW+BR,t=(tx-ball.x)/(Math.abs(ball.vx)||1),span=H-2*BR,period=2*span,raw=ball.y+ball.vy*t,z=((raw-BR)%period+period)%period,target=BR+(z<=span?z:period-z);
+ const desired=Math.abs(target-center)<PH*.16?1:(target<center?0:2),rate=reward<0?.018:.007;
+ if(type==='perceptron'){
+  const pred=m.w.map((row,k)=>row.reduce((sum,w,i)=>sum+w*x[i],m.b[k])),chosen=pred.indexOf(Math.max(...pred));
+  for(let k=0;k<3;k++){const delta=(k===desired?1:0)-(k===chosen?1:0);if(delta)for(let i=0;i<x.length;i++)m.w[k][i]=clamp(m.w[k][i]+rate*delta*x[i],-2,2);m.b[k]=clamp(m.b[k]+rate*((k===desired?1:0)-(k===chosen?1:0)),-2,2)}
+ }else{
+  const f=m.conv.map((row,fi)=>Math.max(0,row.reduce((sum,w,j)=>sum+w*(x[(fi*2+j)%x.length]-.25),0)));
+  const pred=m.dense.map((row,k)=>row.reduce((sum,w,i)=>sum+w*f[i],m.b[k])),chosen=pred.indexOf(Math.max(...pred));
+  for(let k=0;k<3;k++){const delta=(k===desired?1:0)-(k===chosen?1:0);for(let i=0;i<8;i++)m.dense[k][i]=clamp(m.dense[k][i]+rate*delta*f[i],-2,2);m.b[k]=clamp(m.b[k]+rate*delta,-2,2)}
+ }
+ if(reward>0)m.hits++;else m.misses++;trainEvents++;saveMemory();
+}
+function saveMemory(){
+ const mem={version:modelVersion,hiddenCount:N_H,inputCount:N_IN,outputCount:N_OUT,weights,outWeights,bias,models,snnSides:{left:{weights:snnSideState.left.weights,outWeights:snnSideState.left.outWeights,bias:snnSideState.left.bias},right:{weights:snnSideState.right.weights,outWeights:snnSideState.right.outWeights,bias:snnSideState.right.bias}},learnedHits,learnedMisses,trainEvents,savedAt:new Date().toISOString()};
+ try{localStorage.setItem('pongSNN.memory.v1',JSON.stringify(mem));localStorage.setItem('pongSNN.learn.v1',JSON.stringify({learnedHits,learnedMisses,episodes:learnedHits+learnedMisses,trainEvents,updatedAt:mem.savedAt}));}catch(e){log('<b>WARN</b> Penyimpanan browser tidak tersedia. Gunakan Ekspor JSON.')}
+}
+function loadMemory(){
+ try{const raw=localStorage.getItem('pongSNN.memory.v1');if(!raw)return false;const m=JSON.parse(raw);
+ if(m.version!==modelVersion||m.hiddenCount!==N_H||m.inputCount!==N_IN||m.outputCount!==N_OUT)return false;
+ if(m.weights?.length===N_H&&m.outWeights?.length===N_OUT){weights=m.weights;outWeights=m.outWeights;bias=m.bias||bias;learnedHits=m.learnedHits||0;learnedMisses=m.learnedMisses||0;trainEvents=m.trainEvents||0;if(m.models)Object.assign(models,m.models);if(m.snnSides){for(const side of ['left','right']){const saved=m.snnSides[side];if(saved?.weights?.length===N_H&&saved?.outWeights?.length===N_OUT){snnSideState[side].weights=saved.weights;snnSideState[side].outWeights=saved.outWeights;snnSideState[side].bias=saved.bias||snnSideState[side].bias}}}else{snnSideState.right.weights=m.weights;snnSideState.right.outWeights=m.outWeights;snnSideState.right.bias=m.bias||snnSideState.right.bias}return true}
+ }catch(e){}return false;
+}
+function downloadJSON(name,obj){const a=document.createElement('a'),url=URL.createObjectURL(new Blob([JSON.stringify(obj,null,2)],{type:'application/json'}));a.href=url;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(url),1000)}
+function learn(reward,side='right'){
+ const state=snnSideState[side]||snnSideState.right,localWeights=state.weights,localOutWeights=state.outWeights,localBias=state.bias;
+ // Reward-modulated plasticity plus a target-action teaching signal from the predicted interception point.
+ const action=state.lastAction,sign=reward>0?1:-1;
+ const activeInput=state.lastInput,activeHidden=state.lastHidden;
+ for(let j=0;j<N_H;j++)for(let i=0;i<N_IN;i++){
+   const eligibility=(activeInput[i]||0)*(activeHidden[j]||0);
+   localWeights[j][i]=clamp(localWeights[j][i]+sign*.0022*(eligibility+.10*activeInput[i]),-.9,.9);
+ }
+ for(let k=0;k<N_OUT;k++)for(let j=0;j<N_H;j++){
+   const desired=(reward>0&&k===action)?1:(reward<0&&k===action?-1:0);
+   localOutWeights[k][j]=clamp(localOutWeights[k][j]+.009*desired*(activeHidden[j]||.08),-1.4,1.4);
+ }
+ localBias[action]=clamp(localBias[action]+sign*.025,-.9,.9);
+ if(reward>0)learnedHits++;else learnedMisses++;
+ trainEvents++;saveMemory();
+ log(`<b>LEARN</b> reward=${reward>0?'+1':'-1'}; hit=${learnedHits}, miss=${learnedMisses}; plasticity event ${trainEvents}; bobot disimpan.`);
+}
+function coachFromPrediction(){
+ // Frequent low-rate supervised reinforcement: teach outputs which direction reduces predicted interception error.
+ if(ball.vx<=0||tick%6!==0)return;
+ const target=predictY(),err=target-(aiP.y+PH/2),desired= Math.abs(err)<PH*.16?1:(err<0?0:2),state=snnSideState.right;
+ const rate=.0018;
+ for(let k=0;k<N_OUT;k++){
+   const delta=k===desired?rate:-rate*.42;
+   state.bias[k]=clamp(state.bias[k]+delta,-.9,.9);
+   for(let j=0;j<N_H;j++)state.outWeights[k][j]=clamp(state.outWeights[k][j]+delta*(state.lastHidden[j]||.05),-1.4,1.4);
+ }
+ trainEvents++;if(tick%120===0)saveMemory();
+}
+function drawScience(){
+  const cw=moveCanvas.width,ch=moveCanvas.height,tile=cw/8;
+  mctx.clearRect(0,0,cw,ch);
+  for(let r=0;r<8;r++)for(let c=0;c<8;c++){
+    const pos=sq(r,c),light=(r+c)%2===0;
+    mctx.fillStyle=light?'#e8dfc8':'#71866c';mctx.fillRect(c*tile,r*tile,tile,tile);
+    if(lastMove&&(pos===lastMove.from||pos===lastMove.to)){mctx.fillStyle='#c7e77a99';mctx.fillRect(c*tile,r*tile,tile,tile)}
+    const piece=board[pos];
+    if(piece){mctx.font='34px "DejaVu Sans","Segoe UI Symbol",serif';mctx.textAlign='center';mctx.textBaseline='middle';mctx.fillStyle=colorOf(piece)==='w'?'#fffdf4':'#17231c';mctx.shadowColor=colorOf(piece)==='w'?'#17231c':'#fffdf4';mctx.shadowBlur=1;mctx.fillText(PIECES[piece],c*tile+tile/2,r*tile+tile/2+1);mctx.shadowBlur=0}
+  }
+  if(lastMove){
+    const fx=(lastMove.from&7)*tile+tile/2,fy=(lastMove.from>>3)*tile+tile/2,tx=(lastMove.to&7)*tile+tile/2,ty=(lastMove.to>>3)*tile+tile/2;
+    mctx.strokeStyle='#7dd3fc';mctx.lineWidth=4;mctx.beginPath();mctx.moveTo(fx,fy);mctx.lineTo(tx,ty);mctx.stroke();
+    const ang=Math.atan2(ty-fy,tx-fx);mctx.fillStyle='#7dd3fc';mctx.beginPath();mctx.moveTo(tx,ty);mctx.lineTo(tx-13*Math.cos(ang-.5),ty-13*Math.sin(ang-.5));mctx.lineTo(tx-13*Math.cos(ang+.5),ty-13*Math.sin(ang+.5));mctx.closePath();mctx.fill();
+  }
+  const pw=pongCanvas.width,ph=pongCanvas.height;
+  pctx.clearRect(0,0,pw,ph);pctx.fillStyle='#0b110e';pctx.fillRect(0,0,pw,ph);
+  pctx.strokeStyle='#26372c';pctx.lineWidth=1;
+  for(let y=10;y<ph;y+=20){pctx.setLineDash([4,5]);pctx.beginPath();pctx.moveTo(pw/2,y);pctx.lineTo(pw/2,y+10);pctx.stroke()}pctx.setLineDash([]);
+  const bx=ball.x/W*pw,by=ball.y/H*ph,paddleH=PH/H*ph,paddleW=8;
+  const leftY=clamp((humanP.y+PH/2)/H*ph-paddleH/2,0,ph-paddleH),rightY=clamp((aiP.y+PH/2)/H*ph-paddleH/2,0,ph-paddleH);
+  pctx.fillStyle='#e7a56a';pctx.fillRect(14,leftY,paddleW,paddleH);pctx.fillRect(pw-22,rightY,paddleW,paddleH);
+  pctx.fillStyle='#f3f5ed';pctx.beginPath();pctx.arc(bx,by,6,0,Math.PI*2);pctx.fill();
+  pctx.fillStyle='#a5b2a6';pctx.font='11px ui-monospace,monospace';pctx.fillText('BALL / PADDLE',12,15);
+  $('sciTick').textContent=tick.toLocaleString();
+  $('sciPos').textContent=lastMove?PIECES[lastMove.piece]:'—';
+  $('sciVel').textContent=lastMove?`${CFILES[lastMove.from&7]}${8-(lastMove.from>>3)} → ${CFILES[lastMove.to&7]}${8-(lastMove.to>>3)}`:'—';
+  $('sciTarget').textContent=lastMove?`${CFILES[lastMove.to&7]}${8-(lastMove.to>>3)}`:'—';
+  $('sciRally').textContent=moveList.length;$('sciLearn').textContent=trainEvents;
+}
+const CFILES='abcdefgh', PIECES={K:'♔',Q:'♕',R:'♖',B:'♗',N:'♘',P:'♙',k:'♚',q:'♛',r:'♜',b:'♝',n:'♞',p:'♟'};
+let board=[],turn='w',selected=null,legalSelected=[],lastMove=null,moveList=[],gameOver=false,aiBusy=false,halfmove=0;
+const sq=(r,c)=>r*8+c, inside=(r,c)=>r>=0&&r<8&&c>=0&&c<8, colorOf=p=>p?(p===p.toUpperCase()?'w':'b'):null;
+function initialBoard(){board=Array(64).fill('');const back='rnbqkbnr';for(let c=0;c<8;c++){board[c]=back[c];board[8+c]='p';board[48+c]='P';board[56+c]=back[c].toUpperCase()}turn='w';selected=null;legalSelected=[];lastMove=null;moveList=[];gameOver=false;halfmove=0;human=0;ai=0;$('humanScore').textContent='0';$('aiScore').textContent='0';$('leftLabel').textContent=gameMode==='self'?'AI Putih':'Putih';$('rightLabel').textContent='AI Hitam';}
+function isAttacked(pos,by){let r=pos>>3,c=pos&7, pawnDir=by==='w'?-1:1,pr=r-pawnDir;
+ for(const dc of [-1,1])if(inside(pr,c+dc)&&board[sq(pr,c+dc)]===(by==='w'?'P':'p'))return true;
+ for(const [dr,dc] of [[-2,-1],[-2,1],[-1,-2],[-1,2],[1,-2],[1,2],[2,-1],[2,1]]){let rr=r+dr,cc=c+dc;if(inside(rr,cc)&&board[sq(rr,cc)].toLowerCase()==='n'&&colorOf(board[sq(rr,cc)])===by)return true}
+ for(const [dr,dc] of [[-1,-1],[-1,0],[-1,1],[0,-1],[0,1],[1,-1],[1,0],[1,1]]){let rr=r+dr,cc=c+dc,d=1;while(inside(rr,cc)){let p=board[sq(rr,cc)];if(p){if(colorOf(p)===by){let t=p.toLowerCase();if(t==='q'||(d===1&&t==='k')||(dr===0||dc===0?t==='r':t==='b'))return true}break}rr+=dr;cc+=dc;d++}}
+ return false}
+function inCheck(col){const k=board.findIndex(p=>p===(col==='w'?'K':'k'));return k<0||isAttacked(k,col==='w'?'b':'w')}
+function pseudoMoves(col){let out=[];for(let from=0;from<64;from++){let p=board[from];if(!p||colorOf(p)!==col)continue;let r=from>>3,c=from&7,t=p.toLowerCase(),add=(rr,cc,extra={})=>{if(!inside(rr,cc))return false;let to=sq(rr,cc),q=board[to];if(q&&colorOf(q)===col)return false;out.push({from,to,piece:p,capture:q||'',...extra});return !q};
+ if(t==='p'){let d=col==='w'?-1:1,start=col==='w'?6:1,prom=col==='w'?0:7;if(inside(r+d,c)&&!board[sq(r+d,c)]){let to=sq(r+d,c);out.push({from,to,piece:p,promotion:(r+d===prom)?(col==='w'?'Q':'q'):null});if(r===start&&!board[sq(r+2*d,c)])out.push({from,to:sq(r+2*d,c),piece:p})}for(let dc of [-1,1])if(inside(r+d,c+dc)){let to=sq(r+d,c+dc),q=board[to];if(q&&colorOf(q)!==col)out.push({from,to,piece:p,capture:q,promotion:(r+d===prom)?(col==='w'?'Q':'q'):null})}}
+ else if(t==='n'){for(let [dr,dc] of [[-2,-1],[-2,1],[-1,-2],[-1,2],[1,-2],[1,2],[2,-1],[2,1]])add(r+dr,c+dc)}
+ else {let dirs=t==='b'?[[-1,-1],[-1,1],[1,-1],[1,1]]:t==='r'?[[-1,0],[1,0],[0,-1],[0,1]]:[[-1,-1],[-1,0],[-1,1],[0,-1],[0,1],[1,-1],[1,0],[1,1]];for(let [dr,dc] of dirs){let rr=r+dr,cc=c+dc;while(inside(rr,cc)){let keep=add(rr,cc);if(t==='k'||!keep)break;rr+=dr;cc+=dc}}}
+ }
+ return out}
+function legalMoves(col=turn){let out=[];for(let m of pseudoMoves(col)){let captured=board[m.to],old=board[m.from];board[m.to]=m.promotion||old;board[m.from]='';let ok=!inCheck(col);board[m.from]=old;board[m.to]=captured;if(ok)out.push(m)}return out}
+function movePiece(m){let p=board[m.from];board[m.to]=m.promotion||p;board[m.from]='';lastMove=m;turn=turn==='w'?'b':'w';selected=null;legalSelected=[];halfmove=(p.toLowerCase()==='p'||m.capture)?0:halfmove+1;const num=moveList.length+1;moveList.push(`${turn==='b'?num+'. ':'... '}${p.toUpperCase()} ${CFILES[m.from&7]}${8-(m.from>>3)}-${CFILES[m.to&7]}${8-(m.to>>3)}${m.capture?' x':''}${m.promotion?' =Q':''}`);tick++;$('ticks').textContent=tick;
+ const lm=legalMoves(turn);if(!lm.length){gameOver=true;let msg=inCheck(turn)?(turn==='w'?'Skakmat — Hitam menang':'Skakmat — Putih menang'):'Remis — pat';log(`<b>HASIL</b> ${msg}`);$('sciTarget').textContent=msg}
+ $('humanScore').textContent=moveList.length;$('aiScore').textContent=lm.length; ball.x=m.to%8*100+50;ball.y=Math.floor(m.to/8)*56+20;ball.vx=(m.to%8-m.from%8)||.1;ball.vy=(Math.floor(m.to/8)-Math.floor(m.from/8))||.1;
+ // Keep the existing neural models, spike visualization, learning counters and logs active.
+ let chosen=modelStep(turn==='w'?leftModel:rightModel,turn==='w'?humanP:aiP,turn==='w'?'left':'right');
+ if(turn==='b'||gameMode==='self')trainModel(turn==='w'?leftModel:rightModel,turn==='w'?humanP:aiP,turn==='w'?'left':'right',m.capture?1:.2);
+ for(let i=0;i<256;i++){let n=neurons[i];let drive=Math.random()<((i%8===m.to%8||Math.floor(i/8)===Math.floor(m.to/8))?.7:.12)?1:0;n.v=n.v*n.leak+drive*.8;n.spike=n.v>=n.threshold;if(n.spike){n.v=0;totalSpikes++}}
+ $('spikes').textContent=neurons.filter(n=>n.spike).length;$('totalSpikes').textContent=totalSpikes;
+ [...grid.children].forEach((d,i)=>{let n=neurons[i];d.style.background=n.spike?'#22c55e':n.v>.24?'#eab308':'#18243b';d.style.boxShadow=n.spike?'0 0 5px #22c55e66':'none'});
+ $('upOut').textContent=chosen===0?1:0;$('stayOut').textContent=chosen===1?1:0;$('downOut').textContent=chosen===2?1:0;
+ log(`<b>MOVE</b> ${p} ${CFILES[m.from&7]}${8-(m.from>>3)} → ${CFILES[m.to&7]}${8-(m.to>>3)}; model=${modelNames[turn==='w'?leftModel:rightModel]}; legal=${lm.length}`);
+ draw();drawScience();
+ if(!gameOver&&(gameMode==='self'||turn==='b')){aiBusy=true;setTimeout(()=>{if(!running||gameOver){aiBusy=false;return}const moves=legalMoves(turn);if(moves.length){let m=chooseChessMove(moves,turn==='w'?leftModel:rightModel);movePiece(m)}aiBusy=false},gameMode==='self'?280:380)}
+}
+function evaluate(col){let vals={p:100,n:320,b:330,r:500,q:900,k:0},score=0;for(let i=0;i<64;i++){let p=board[i];if(!p)continue;let v=vals[p.toLowerCase()]+(3.5-Math.abs(3.5-(i&7))*8)+(3.5-Math.abs(3.5-(i>>3))*5);score+=(colorOf(p)===col?v:-v)}return score}
+function minimax(depth,alpha,beta,maximizing,col){if(depth===0)return evaluate(col);let moves=legalMoves(turn);if(!moves.length)return inCheck(turn)?(maximizing?-99999:99999):0;let best=maximizing?-Infinity:Infinity;for(let m of moves){let a=board[m.from],b=board[m.to];board[m.to]=m.promotion||a;board[m.from]='';turn=turn==='w'?'b':'w';let val=minimax(depth-1,alpha,beta,!maximizing,col);turn=turn==='w'?'b':'w';board[m.from]=a;board[m.to]=b;if(maximizing){best=Math.max(best,val);alpha=Math.max(alpha,val)}else{best=Math.min(best,val);beta=Math.min(beta,val)}if(beta<=alpha)break}return best}
+function chooseChessMove(moves,model){if(moves.length===1)return moves[0];let col=turn,best=-Infinity,choice=moves[0],scored=[];for(let m of moves){let a=board[m.from],b=board[m.to];board[m.to]=m.promotion||a;board[m.from]='';turn=turn==='w'?'b':'w';let val=minimax(1,-Infinity,Infinity,false,col);turn=col;board[m.from]=a;board[m.to]=b;val+=(b?12:0)+(Math.random()*3);scored.push({m,val})}scored.sort((a,b)=>b.val-a.val);let pool=model==='snn'?scored.slice(0,Math.min(5,scored.length)):model==='cnn'?scored.slice(0,Math.min(3,scored.length)):scored.slice(0,Math.min(2,scored.length));return pool[Math.floor(Math.random()*pool.length)].m}
+function draw(){ctx.clearRect(0,0,800,800);const tile=100;for(let r=0;r<8;r++)for(let c=0;c<8;c++){let light=(r+c)%2===0;ctx.fillStyle=light?'#e8dfc8':'#71866c';ctx.fillRect(c*tile,r*tile,tile,tile);let pos=sq(r,c);if(lastMove&&(pos===lastMove.from||pos===lastMove.to)){ctx.fillStyle='#d5df6580';ctx.fillRect(c*tile,r*tile,tile,tile)}if(selected===pos){ctx.fillStyle='#facc1580';ctx.fillRect(c*tile,r*tile,tile,tile)}if(legalSelected.some(m=>m.to===pos)){ctx.fillStyle=board[pos]?'#ef444488':'#1f293780';ctx.beginPath();ctx.arc(c*tile+50,r*tile+50,board[pos]?38:12,0,Math.PI*2);ctx.fill()}if(c===0){ctx.fillStyle=light?'#53614e':'#e8dfc8';ctx.font='12px monospace';ctx.fillText(8-r,c*tile+5,r*tile+15)}if(r===7){ctx.fillStyle=light?'#53614e':'#e8dfc8';ctx.font='12px monospace';ctx.fillText(CFILES[c],c*tile+82,r*tile+94)}let p=board[pos];if(p){ctx.font='70px "DejaVu Sans", "Segoe UI Symbol", serif';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillStyle=colorOf(p)==='w'?'#fffdf4':'#17231c';ctx.shadowColor=colorOf(p)==='w'?'#17231c':'#fffdf4';ctx.shadowBlur=2;ctx.fillText(PIECES[p],c*tile+50,r*tile+54);ctx.shadowBlur=0;ctx.textAlign='start';ctx.textBaseline='alphabetic'}}ctx.fillStyle='#c7e77a';ctx.font='16px monospace';ctx.fillText(gameOver?'PERTANDINGAN SELESAI':(turn==='w'?'GILIRAN PUTIH':'GILIRAN HITAM'),12,795);$('leftLabel').textContent=gameMode==='self'?'AI Putih ('+modelNames[leftModel]+')':'Putih';$('rightLabel').textContent='Hitam ('+modelNames[rightModel]+')'}
+function step(){
+  ball.x+=ball.vx;ball.y+=ball.vy;
+  if(ball.y<BR||ball.y>H-BR){ball.y=clamp(ball.y,BR,H-BR);ball.vy*=-1}
+  if(ball.x<BR||ball.x>W-BR)ball.vx*=-1;
+  const target=clamp(ball.y-PH/2,0,H-PH);
+  humanP.y+=clamp(target-humanP.y,-2.2,2.2);
+  aiP.y+=clamp(target-aiP.y,-2.8,2.8);
+  draw();drawScience();
+}
+function resetBall(){ball.x=400;ball.y=400;ball.vx=1;ball.vy=1}
+
+function frame(ts){if(!running)return;try{frameCounter++;if(ts-lastFpsStamp>=1000){fpsEstimate=frameCounter*1000/Math.max(1,ts-lastFpsStamp);frameCounter=0;lastFpsStamp=ts}if(!lastTime)lastTime=ts;let dt=Math.min(50,ts-lastTime);lastTime=ts;acc+=dt;const interval=1000/60;let loops=0;while(acc>=interval&&loops<3){step();acc-=interval;loops++}raf=requestAnimationFrame(frame)}catch(err){running=false;cancelAnimationFrame(raf);log('<b>ERROR</b> Simulasi berhenti: '+String(err.message||err));console.error(err)}}
+function start(){if(!running){running=true;lastTime=0;acc=0;log('<b>SYSTEM</b> permainan catur dimulai. Pilih model AI atau mainkan sebagai Putih.');raf=requestAnimationFrame(frame);if(gameMode==='self'&&!aiBusy&&!gameOver){aiBusy=true;setTimeout(()=>{if(running&&!gameOver){const ms=legalMoves();if(ms.length)movePiece(chooseChessMove(ms,turn==='w'?leftModel:rightModel));else gameOver=true}aiBusy=false},250)}}}
+function pause(){running=false;if(raf)cancelAnimationFrame(raf);log('<b>SYSTEM</b> simulasi dijeda.')}
+function reset(){pause();tick=0;totalSpikes=0;$('ticks').textContent='0';$('totalSpikes').textContent='0';rallyHits=0;ballTrail=[];initialBoard();resetBall();neurons.forEach(n=>{n.v=0;n.spike=false});hidden.forEach(n=>{n.v=0;n.spike=false});output.forEach(n=>{n.v=0;n.spike=false});draw();drawScience();log('<b>SYSTEM</b> papan direset; memory AI dipertahankan.')}
+document.addEventListener('keydown',e=>{keys[e.key]=true;if(['ArrowUp','ArrowDown',' '].includes(e.key))e.preventDefault();if(e.key===' '){running?pause():start()}});
+document.addEventListener('keyup',e=>keys[e.key]=false);
+function bindHold(id,dir){const el=$(id),down=e=>{e.preventDefault();touchMove[dir]=true;if(!running)start()},up=e=>{e.preventDefault();touchMove[dir]=false};el.addEventListener('pointerdown',down);['pointerup','pointercancel','pointerleave','lostpointercapture'].forEach(ev=>el.addEventListener(ev,up));el.addEventListener('contextmenu',e=>e.preventDefault())}
+bindHold('touchUp','up');bindHold('touchDown','down');
+canvas.addEventListener('click',e=>{if(gameOver||gameMode==='self'||turn!=='w'||aiBusy)return;const r=canvas.getBoundingClientRect(),c=Math.floor((e.clientX-r.left)/r.width*8),rr=Math.floor((e.clientY-r.top)/r.height*8);if(!inside(rr,c))return;const pos=sq(rr,c);if(selected===null){if(board[pos]&&colorOf(board[pos])==='w'){selected=pos;legalSelected=legalMoves('w').filter(m=>m.from===pos)} }else{let m=legalSelected.find(m=>m.to===pos);if(m)movePiece(m);else if(board[pos]&&colorOf(board[pos])==='w'){selected=pos;legalSelected=legalMoves('w').filter(x=>x.from===pos)}else{selected=null;legalSelected=[]}}draw()});
+ $('start').onclick=start;$('pause').onclick=pause;$('reset').onclick=reset;$('clearLog').onclick=()=>{$('logs').innerHTML='';log('<b>SYSTEM</b> log dibersihkan.')};
+$('saveAI').onclick=()=>{saveMemory();downloadJSON('memory.json',{version:modelVersion,hiddenCount:N_H,inputCount:N_IN,outputCount:N_OUT,weights,outWeights,bias,models,snnSides:{left:{weights:snnSideState.left.weights,outWeights:snnSideState.left.outWeights,bias:snnSideState.left.bias},right:{weights:snnSideState.right.weights,outWeights:snnSideState.right.outWeights,bias:snnSideState.right.bias}},learnedHits,learnedMisses,trainEvents});downloadJSON('learn.json',{learnedHits,learnedMisses,episodes:learnedHits+learnedMisses,trainEvents,updatedAt:new Date().toISOString()});log('<b>SAVE</b> Ekspor memory.json dan learn.json dimulai.')};
+$('loadAI').onclick=()=>{const inp=document.createElement('input');inp.type='file';inp.accept='.json,application/json';inp.onchange=async()=>{try{const obj=JSON.parse(await inp.files[0].text());if(obj.version===modelVersion&&obj.hiddenCount===N_H&&obj.inputCount===N_IN&&obj.outputCount===N_OUT&&obj.weights?.length===N_H&&obj.outWeights?.length===N_OUT){weights=obj.weights;outWeights=obj.outWeights;bias=obj.bias||bias;learnedHits=obj.learnedHits||0;learnedMisses=obj.learnedMisses||0;trainEvents=obj.trainEvents||0;if(obj.models)Object.assign(models,obj.models);if(obj.snnSides){for(const side of ['left','right']){const saved=obj.snnSides[side];if(saved?.weights?.length===N_H&&saved?.outWeights?.length===N_OUT){snnSideState[side].weights=saved.weights;snnSideState[side].outWeights=saved.outWeights;snnSideState[side].bias=saved.bias||snnSideState[side].bias}}}else{snnSideState.right.weights=obj.weights;snnSideState.right.outWeights=obj.outWeights;snnSideState.right.bias=obj.bias||snnSideState.right.bias}saveMemory();log('<b>LOAD</b> Bobot AI berhasil dimuat.')}else log('<b>WARN</b> Format memory.json tidak cocok.')}catch(e){log('<b>WARN</b> JSON tidak valid.')}};inp.click()};
+$('gameMode').onchange=e=>{gameMode=e.target.value;$('leftLabel').textContent=gameMode==='self'?'AI kiri ('+modelNames[leftModel]+')':'Putih';$('rightLabel').textContent='Hitam ('+modelNames[rightModel]+')';$('touchUp').style.display=gameMode==='self'?'none':'';$('touchDown').style.display=gameMode==='self'?'none':'';log('<b>MODE</b> '+(gameMode==='self'?'AI vs AI self-play aktif.':'Manusia vs AI aktif.'));draw()};
+$('leftModel').onchange=e=>{leftModel=e.target.value;$('leftLabel').textContent=gameMode==='self'?'AI kiri ('+modelNames[leftModel]+')':'Putih';draw()};
+$('rightModel').onchange=e=>{rightModel=e.target.value;$('rightLabel').textContent='Hitam ('+modelNames[rightModel]+')';draw()};
+const loaded=loadMemory();initialBoard();log(`<b>INIT</b> 20 sensor (bola + paddle manusia + prediksi) → ${N_H} hidden LIF → 3 output. ${loaded?'Memory tersimpan dimuat.':'Bobot awal baru.'}`);
+log('<b>INIT</b> Auto-save memakai localStorage; tombol Ekspor membuat memory.json dan learn.json.');
+draw();if(tick%2===0)drawScience();
+})();</script>
+</body>
+</html>
